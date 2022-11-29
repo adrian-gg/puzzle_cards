@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<!----for ios 7 style, multi-resolution icon of 152×15---->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-barstyle" content="black-translucent">
+	<link rel="apple-touch-icon" href="img/ico-pc-n.png" id="apple-icon">
+	<!----for Chrome on Android, multi-resolution icon of 196×196---->
+	<meta name="mobile-web-app-capable" content="yes">
+	<link rel="shortcut icon" sizes="196×196" href="img/ico-pc-n.png" id="shortcut-icon">
+	<title>Puzzle Cards</title>
+	<link rel="stylesheet" href="styles.css">
+	<link rel="icon" type="image/png" href="img/ico-pc-n.png" id="icon-icon">
+	<link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="puzzles.js"></script>
+
+	<script>
+		var numeroPuzzlesResueltos = 0;
+		var numeroPuzzlesVistos = 0;
+		var numeroPuzzlesNew = 0;
+		var numeroPuzzlesTotales = PUZZLES.length;
+		$(document).ready(function () {
+
+
+			//CARGAR JSON
+			/* var PUZZLES = [];
+
+			$.getJSON("puzzles.json", function (json) {
+				var datos = json.PUZZLES;
+				for (i in datos) {
+					PUZZLES.push([datos[i].id, datos[i].solucion, datos[i].estado]);
+				}
+			});
+
+			console.log(PUZZLES); */
+
+
+			//localStorage.clear();
+			//sessionStorage.clear();
+
+			var partigaGuardada = localStorage.getItem('misPuzzles'); //cargar partiga guardada si la hay.
+
+			if (partigaGuardada == null) { //si no hay partida guardada, crearla.
+				localStorage.setItem('misPuzzles', JSON.stringify(PUZZLES)); //guardar datos convirtiendolos en string
+				partigaGuardada = localStorage.getItem('misPuzzles');
+				partigaGuardada = JSON.parse(partigaGuardada); //obtener datos desconvirtiendolos en string
+				cargaCartas(partigaGuardada);
+
+			} else {
+				partigaGuardada = JSON.parse(partigaGuardada);
+				if (partigaGuardada.length < PUZZLES.length) { //Si hay actualizaciones
+					for (i = partigaGuardada.length; i < PUZZLES.length; i++) {
+						partigaGuardada.push(PUZZLES[i]);
+
+					}
+					cargaCartas(partigaGuardada);
+					cargarNuevosPuzzles(partigaGuardada);
+					guardarPartida(partigaGuardada);
+
+				} else {
+					cargaCartas(partigaGuardada);
+
+				}
+
+			}
+
+			if(numeroPuzzlesTotales == numeroPuzzlesResueltos){//Si se han resuelto todos los puzzles...
+				$("#apple-icon, #shortcut-icon, #icon-icon").attr('href', 'img/ico-pc-w.png');
+			}
+
+			function cargaCartas(PARTIDA) {
+				cuerpoBaraja = $("#cuerpo__baraja");
+				for (i = 0; i < PARTIDA.length; i++) {
+					var Ar = PARTIDA[i];
+					cuerpoBaraja.append('<div class="baraja__contenedor__carta" id="' +
+						Ar["id"] + '"><div class="contenedor__carta__carta carta--' +
+						Ar["estado"] + '" id="' +
+						Ar["solucion"] + '"><img src="' +
+						preguntarEstado(Ar["estado"], Ar["id"]) + '" alt="' +
+						Ar["id"] + '"></div></div>'
+					);
+				};
+
+				function preguntarEstado(estado, enlace) {
+					var cartaBase;
+					if (estado == "bloqueada" || estado == "new") {
+
+						if (estado == "new") { numeroPuzzlesNew++; }
+
+						cartaBase = 'img/carta-base.jpg';
+						return cartaBase;
+					} else {
+
+						if (estado == "resuelta") {
+							numeroPuzzlesResueltos++;
+						} else {
+							numeroPuzzlesVistos++;
+						}
+
+						cartaBase = 'img/puzzles/' + enlace + 'A.jpg';
+						return cartaBase;
+					}
+				};
+			}
+
+
+			/*===CODIFICADOR===*/
+
+			var respuesta;
+			var palabraClave = "PUZZLE";
+			var newArrayOneRespuesta;
+			var newArrayOnePalabraClave;
+			var res;
+			var pcla;
+			var asciiRespuesta;
+			var asciiPalabraClave;
+			var newArrayTwoRespuesta = [];
+			var newArrayTwoPalabraClave = [];
+			var sumaRespuesta;
+			var sumaPalabraClave;
+			var codigoFinal;
+			var solucion;
+
+			var puzzleID;
+			var puzzleIDC;
+			var solucionPuzzleID;
+
+			document.getElementById('numeroPuzzlesResueltos').innerHTML = numeroPuzzlesResueltos;
+			document.getElementById('numeroPuzzlesTotales').innerHTML = numeroPuzzlesTotales;
+
+			$('#enviar').click(function () {
+				newArrayTwoRespuesta = [];
+				newArrayTwoPalabraClave = [];
+				sumaRespuesta = 0;
+				sumaPalabraClave = 0;
+				codigoFinal = 0;
+
+
+				//extraer valor
+				respuesta = $('#respuesta').val().toUpperCase();
+
+				//separar caracteres y añadirlos a una primera nueva array
+				newArrayOneRespuesta = respuesta.split('');
+				newArrayOnePalabraClave = palabraClave.split('');
+
+				//convertir caracteres en ASCII
+				newArrayOneRespuesta.forEach(function (elementoRes, array) {
+					res = elementoRes
+					asciiRespuesta = res.charCodeAt(0);
+					//añadir caracteres convertidos en ASCII de la respuesta a segunda nueva array
+					newArrayTwoRespuesta.push(asciiRespuesta);
+				});
+
+				newArrayOnePalabraClave.forEach(function (elementoPcla, array) {
+					pcla = elementoPcla
+					asciiPalabraClave = pcla.charCodeAt(0);
+					//añadir caracteres convertidos en ASCII de la palabra clave a segunda nueva array
+					newArrayTwoPalabraClave.push(asciiPalabraClave);
+				});
+
+				//sumar caracteres/números entre ellos (array)
+				sumaRespuesta = newArrayTwoRespuesta.reduce(function (a, b) { return a + b; });
+				sumaPalabraClave = newArrayTwoPalabraClave.reduce(function (a, b) { return a + b; });
+
+				codigoFinal = newArrayOneRespuesta[0] + ((sumaRespuesta + sumaPalabraClave) * sumaRespuesta) + newArrayOnePalabraClave[newArrayOnePalabraClave.length - 1];
+
+				/*código resultante*/
+				//document.getElementById('cont-code').innerHTML = "CÓDIGO: " + codigoFinal;
+
+
+
+				if (codigoFinal == solucion) { //CORRECTO
+					if (!$("#" + puzzleID + " div").hasClass("carta--resuelta")) {//si el puzzle se ha resuelto por primera vez.
+						numeroPuzzlesResueltos++;
+						numeroPuzzlesVistos--;
+						document.getElementById('numeroPuzzlesResueltos').innerHTML = numeroPuzzlesResueltos;
+
+						if(numeroPuzzlesTotales == numeroPuzzlesResueltos){//Si se han resuelto todos los puzzles...
+							$("#apple-icon, #shortcut-icon, #icon-icon").attr('href', 'img/ico-pc-w.png');
+						}
+
+						partigaGuardada.map(function (dato) {
+							if (dato.id == puzzleID) {
+								dato.estado = "resuelta";
+							}
+							return dato;
+
+						});
+
+						guardarPartida(partigaGuardada);
+
+						cargarNuevosPuzzles(partigaGuardada);
+					}
+
+					document.getElementById('yLaRespuestaEs').style.visibility = "visible";
+					document.getElementById('yLaRespuestaEs').style.opacity = "1";
+					document.getElementById('correcto').style.display = "flex";
+					setTimeout(function () {
+						document.getElementById("respuesta").value = "";
+						$("#" + puzzleID + " div").addClass("carta--resuelta");
+						document.getElementById('cartaSeleccionada').style.display = "none";
+						document.getElementById('yLaRespuestaEs').style.opacity = "0";
+
+					}, 6000);
+
+					setTimeout(function () {
+						document.getElementById('yLaRespuestaEs').style.visibility = "hidden";
+						document.getElementById('cartaSeleccionada').style.display = "none";
+						document.getElementById('correcto').style.display = "none";
+						document.getElementById('body').style.overflowY = "initial";
+
+					}, 7000);
+
+
+
+				} else { //INCORRECTO
+
+					document.getElementById('yLaRespuestaEs').style.visibility = "visible";
+					document.getElementById('yLaRespuestaEs').style.opacity = "1";
+					document.getElementById('incorrecto').style.display = "flex";
+
+					setTimeout(function () {
+						document.getElementById('yLaRespuestaEs').style.opacity = "0";
+
+					}, 6000);
+
+					setTimeout(function () {
+						document.getElementById('yLaRespuestaEs').style.visibility = "hidden";
+						document.getElementById('incorrecto').style.display = "none";
+
+					}, 7000);
+				}
+			});
+
+
+			$(".baraja__contenedor__carta").click(function () {
+				/*===EXTRACTOR DE IDs===*/
+				if (!$(this).children('.contenedor__carta__carta').hasClass("carta--bloqueada")) {
+					puzzleID = $(this).attr("id");
+					solucionPuzzleID = $("#" + puzzleID).children(".contenedor__carta__carta").attr("id");
+					solucion = solucionPuzzleID;
+
+					/*===CARTA VISTA===*/
+					if ($(this).children('.contenedor__carta__carta').hasClass("carta--new")) {
+						atribusoSrc = 'img/puzzles/' + puzzleID + 'A.jpg';
+						cartaClicada = $(this).children('.contenedor__carta__carta');
+						cartaClicada.removeClass("carta--new").addClass("carta--vista");
+
+						setTimeout(() => {
+							cartaClicada
+								.children("img")
+								.attr("src", atribusoSrc)
+								.attr("alt", puzzleID);
+						}, 1000);
+
+						numeroPuzzlesVistos++;
+						numeroPuzzlesNew--;
+					}
+
+					/*===ABRIR PUZZLE SELECCIONADO===*/
+					document.getElementById('cartaSeleccionada').style.display = "initial";
+					document.getElementById('body').style.overflowY = "hidden";
+					$("#cartaSeleccionada__carta div").empty().append('<img src="img/puzzles/' + puzzleID + 'B.jpg" alt="' + puzzleID + '">');
+					//document.getElementById('cartaSeleccionada__carta').innerHTML = '<img src="img/puzzles/' + puzzleID + 'B.jpg" alt="' + puzzleID + '">';
+					if ($(this).children('.contenedor__carta__carta').hasClass("carta--resuelta")) {
+						$(".cartaSeleccionada__carta div").addClass("carta--resuelta");
+					}
+				}
+			});
+
+			$("#atras").click(function () {
+				$("#cartaSeleccionada").addClass("desaparicionCartaSeleccionada");
+				setTimeout(function () {
+					/*===CERRAR PUZZLE SELECCIONADO===*/
+					document.getElementById('cartaSeleccionada').style.display = "none";
+					document.getElementById('body').style.overflowY = "initial";
+					$("#cartaSeleccionada").removeClass("desaparicionCartaSeleccionada");
+					$(".cartaSeleccionada__carta div").removeClass("carta--resuelta");
+				}, 1000);
+			});
+
+
+			function cargarNuevosPuzzles(PARTIDA) {
+				var numeroPuzzlesBloqueados = numeroPuzzlesTotales - (numeroPuzzlesVistos + numeroPuzzlesNew + numeroPuzzlesResueltos);
+				var posicionPuzzlesADesbloquear = numeroPuzzlesResueltos;
+				if (!(numeroPuzzlesResueltos == numeroPuzzlesTotales)) {
+					if (numeroPuzzlesResueltos == (numeroPuzzlesTotales - numeroPuzzlesBloqueados)) {
+						for (i = 0; i < 3; i++) {
+							var posicion = PARTIDA[posicionPuzzlesADesbloquear]["id"];
+							var posicionID = "#" + posicion;
+							$(posicionID).children(".contenedor__carta__carta")
+								.removeClass("carta--bloqueada")
+								.addClass("carta--new")
+								.children(".contenedor__carta__carta")
+								.children("img")
+								.attr("src", "img/carta-base.jpg")
+								.attr("alt", posicion);
+
+							PARTIDA[posicionPuzzlesADesbloquear]["estado"] = "new";
+
+							guardarPartida(PARTIDA);
+							numeroPuzzlesNew++;
+							posicionPuzzlesADesbloquear++;
+
+						}
+
+					}
+				}
+			};
+
+			function guardarPartida(PARTIDA) {
+				//localStorage.clear();
+				localStorage.setItem('misPuzzles', JSON.stringify(PARTIDA)); //guardar datos convirtiendolos en string
+			}
+
+		});
+	</script>
+</head>
+
+<body oncontextmenu="return false" onselectstart="return false" ondragstart="return false" id="body">
+	<!-- <div id="cont-code"></div> -->
+	<main>
+		<!----BLOQUE CABECERA---->
+		<header class="cabecera">
+			<a href="#cuerpo">
+				<div class="cabecera__flecha"></div>
+			</a>
+		</header>
+
+		<!----BLOQUE CUERPO---->
+		<article class="cuerpo" id="cuerpo">
+			<div class="cuerpo__contenedor__linea">
+				<div class="contenedor__linea__linea"></div>
+				<div class="contenedor__linea__cuadrado"></div>
+				<div class="contenedor__linea__score">
+					<span class="puzzlesResueltos">SOLVED:&nbsp<span class="resueltos"
+							id="numeroPuzzlesResueltos">#</span></span>&nbsp/&nbsp<span class="todos"
+						id="numeroPuzzlesTotales">#</span></span>
+				</div>
+				<div class="contenedor__linea__cuadrado"></div>
+				<div class="contenedor__linea__linea"></div>
+			</div>
+			<section class="cuerpo__baraja" id="cuerpo__baraja">
+
+			</section>
+		</article>
+	</main>
+	<!----PUZLE SELECCIONADO---->
+	<section class="cartaSeleccionada" id="cartaSeleccionada">
+		<div class="cartaSeleccionada__carta" id="cartaSeleccionada__carta">
+			<div></div>
+		</div>
+		<div class="cartaSeleccionada__contenedorInput">
+			<input type="text" placeholder="ANSWER" id="respuesta">
+			<div>
+				<input type="button" value="&lt;" id="atras">
+				<input type="submit" value="SUBMIT" id="enviar">
+			</div>
+
+		</div>
+	</section>
+	<!----RESPUESTA---->
+	<section class="yLaRespuestaEs" id="yLaRespuestaEs">
+		<div class="yLaRespuestaEs__correcto" id="correcto">
+			<span>C</span><span>O</span><span>R</span><span>R</span><span>E</span><span>C</span><span>T</span>
+		</div>
+		<div class="yLaRespuestaEs__incorrecto" id="incorrecto">
+			<span>I</span><span>N</span><span>C</span><span>O</span><span>R</span><span>R</span><span>E</span><span>C</span><span>T</span>
+		</div>
+	</section>
+</body>
+
+</html>
