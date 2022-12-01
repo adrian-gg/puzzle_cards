@@ -144,7 +144,7 @@
 
 
 				//extraer valor
-				respuesta = $('#respuesta').val().toUpperCase();
+				respuesta = $('#respuesta').val().replace(' ', '').toUpperCase();
 
 				//separar caracteres y añadirlos a una primera nueva array
 				newArrayOneRespuesta = respuesta.split('');
