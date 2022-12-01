@@ -251,7 +251,7 @@ const PUZZLES = [
     },
     {
         "id": "puz051",
-        "solucion": "261079E",
+        "solucion": "257624E",
         "estado": "bloqueada"
     },
     {
